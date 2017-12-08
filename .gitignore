@@ -1,0 +1,17 @@
+# Python Packaging
+.eggs
+*.egg
+*.egg-info
+dist
+build
+eggs
+sdist
+MANIFEST
+
+# Generated
+*.py[cod]
+
+# Editors
+*~
+.*.swp
+.idea
