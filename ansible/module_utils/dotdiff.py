@@ -57,15 +57,12 @@ def dotdiff(old, new, prefix=list()):
         raise Exception('Requested a diff of a {} (original) and a {} (target), aborting.'.format(type(old), type(new)))
 
     diff = []
-    is_list = False
 
     # Check if we're comparing lists, in which case we convert the list to a
     # dictionary with keys corresponding to their indexes like '0', '1', '2'.
     # This greatly simplifies the code ahead, since we only ever have to compare
     # dictionaries, and get() can be used on them.
     if isinstance(new, list) and isinstance(old, list):
-
-        is_list = True
 
         newl = new
         oldl = old
@@ -84,16 +81,20 @@ def dotdiff(old, new, prefix=list()):
 
             diff.append(DiffEntry(path=count_prefix, old=len(old), new=len(new)))
 
-    if is_list:
         # When comparing lists, all keys (old and new) are compared; values can be added, removed
         # or changed on both sides. Both old and new keys are converted to a set to remove dupes.
         # This yields a unique list of keys that we can try and compare between both sets, like:
         # hosts.1: "foodomain" => "<undefined>"
         keys = set(new.keys() + old.keys())
-    else:
+
+    elif isinstance(new, dict) and isinstance(old, dict):
         # When comparing dicts, we only consider diffing keys set in the target dictionary.
         # This allows the user to omit default values from the document.
         keys = new.keys()
+
+    else:
+        # Only diff nested structures
+        raise Exception('dotdiff() can only diff nested structures (got a {} and a {})'.format(type(old), type(new)))
 
     # Traverse the dictionary on the left, and report values that are missing or changed on the right.
     for ikey in keys:
