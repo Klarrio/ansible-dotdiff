@@ -2,15 +2,21 @@ VERSION := $(shell cat VERSION)
 SOURCES := $(shell find . -name '*.py')
 DIST = dist/ansible-dotdiff-${VERSION}.tar.gz
 
-# Require the Go compiler/toolchain to be installed
+# Require twine for publishing package
 ifeq (, $(shell which twine 2>/dev/null))
 $(error 'twine' is required for publishing packages, run `pip install twine`)
+endif
+
+# Require wheel for building packages
+ifeq (, $(shell which wheel 2>/dev/null))
+$(error 'wheel' is required for building packages, run `pip install wheel`)
 endif
 
 .PHONY: build
 build: ${DIST}
 
 ${DIST}: ${SOURCES}
+	rm -rf dist/
 	python setup.py sdist bdist_wheel
 
 .PHONY: upload
