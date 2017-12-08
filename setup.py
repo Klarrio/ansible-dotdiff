@@ -5,10 +5,11 @@ from setuptools import setup, find_packages
 # ]
 
 long_description=open('README.rst', 'r').read()
+version=open('VERSION', 'r').read()
 
 setup(
     name='ansible-dotdiff',
-    version='0.1.0',
+    version=version,
     description='Nested structure diff library with dot-path notation for Ansible',
     long_description=long_description,
     author='Timo Beckers',
