@@ -15,8 +15,7 @@ endif
 .PHONY: build
 build: ${DIST}
 
-${DIST}: ${SOURCES}
-	rm -rf dist/
+${DIST}: ${SOURCES} clean
 	python setup.py sdist bdist_wheel
 
 .PHONY: upload
@@ -24,3 +23,7 @@ upload: build
 	twine upload dist/*
 
 all: ${DIST} upload
+
+.PHONY: clean
+clean:
+	rm -rf dist/ build/ *.egg-info
