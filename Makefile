@@ -16,7 +16,7 @@ endif
 build: ${DIST}
 
 ${DIST}: ${SOURCES} clean
-	python setup.py sdist bdist_wheel
+	python setup.py sdist bdist_wheel --universal
 
 .PHONY: upload
 upload: build
