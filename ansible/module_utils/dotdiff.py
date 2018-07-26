@@ -1,6 +1,3 @@
-from operator import attrgetter
-
-
 class Undefined(object):
     """
     Undefined is a dummy object used to explicitly indicate that a
@@ -38,6 +35,14 @@ def _ltod(ilist):
     Convert a list to an str(int)-indexed dictionary.
     """
     return {str(i): v for i, v in enumerate(ilist)}
+
+
+def _get_path(diff_entry):
+    """
+    Return the 'path' attribute of a DiffEntry.
+    Used in the sort function.
+    """
+    return diff_entry.path
 
 
 def dotdiff(old, new, prefix=list()):
@@ -117,4 +122,4 @@ def dotdiff(old, new, prefix=list()):
                 diff.append(DiffEntry(path=local_prefix, old=oldv, new=newv))
 
     # Return list sorted by DiffEntry's path
-    return sorted(diff, key=attrgetter('path'))
+    return sorted(diff, key=_get_path)
