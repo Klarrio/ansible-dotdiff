@@ -1,3 +1,6 @@
+import itertools
+
+
 class Undefined(object):
     """
     Undefined is a dummy object used to explicitly indicate that a
@@ -15,6 +18,7 @@ class DiffEntry(object):
     DiffEntry is a representation of an attribute's key (path)
     and its values on both sides of the diff.
     """
+
     def __init__(self, path=list(), old=None, new=None):
         self.path = path
         self.old = old
@@ -90,7 +94,7 @@ def dotdiff(old, new, prefix=list()):
         # or changed on both sides. Both old and new keys are converted to a set to remove dupes.
         # This yields a unique list of keys that we can try and compare between both sets, like:
         # hosts.1: "foodomain" => "<undefined>"
-        keys = set(new.keys() + old.keys())
+        keys = itertools.chain(new.keys(), old.keys())
 
     elif isinstance(new, dict) and isinstance(old, dict):
         # When comparing dicts, we only consider diffing keys set in the target dictionary.
