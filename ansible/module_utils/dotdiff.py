@@ -1,25 +1,37 @@
+"""
+ansible.module_utils.dotdiff generates nested diffs using dot-path notation.
+
+:authors: Timo Beckers
+:license: MIT
+"""
 import itertools
 
 
 class Undefined(object):
     """
-    Undefined is a dummy object used to explicitly indicate that a
-    dictionary key is missing on either side of a diff entry. This is required
-    because all basic Python data types can be encoded in json,
-    which is our primary conversion format. There is no other easy way to check
-    the difference between a null (None) value or a missing dict key using get().
-    Undefined is inspired by jinja2's implementation.
+    Undefined is a dummy object.
+
+    It is used to explicitly indicate that a dictionary key is missing on
+    either side of a diff entry. This is required because all basic Python data
+    types can be encoded in json, which is our primary conversion format. There
+    is no other easy way to check the difference between a null (None) value or
+    a missing dict key using get(). Undefined is inspired by jinja2's
+    implementation.
     """
+
     pass
 
 
 class DiffEntry(object):
     """
-    DiffEntry is a representation of an attribute's key (path)
-    and its values on both sides of the diff.
+    DiffEntry is a representation of a difference.
+
+    It describes the attribute's key (path) and its values on both sides of
+    the structure.
     """
 
     def __init__(self, path=list(), old=None, new=None):
+        """Initialize a new DiffEntry."""
         self.path = path
         self.old = old
         self.new = new
@@ -28,6 +40,7 @@ class DiffEntry(object):
         self.undef_str = '<undefined>'
 
     def __repr__(self):
+        """Represent the DiffEntry in human-readable format."""
         old = self.undef_str if self.old is Undefined else self.old
         new = self.undef_str if self.new is Undefined else self.new
 
@@ -35,15 +48,14 @@ class DiffEntry(object):
 
 
 def _ltod(ilist):
-    """
-    Convert a list to an str(int)-indexed dictionary.
-    """
+    """Convert a list to an str(int)-indexed dictionary."""
     return {str(i): v for i, v in enumerate(ilist)}
 
 
 def _get_path(diff_entry):
     """
     Return the 'path' attribute of a DiffEntry.
+
     Used in the sort function.
     """
     return diff_entry.path
@@ -51,21 +63,28 @@ def _get_path(diff_entry):
 
 def dotdiff(old, new, prefix=list()):
     """
+    Find the different between two nested structures, visualizing each change.
+
     Path logging idea inspired by an answer in
     https://stackoverflow.com/questions/11929904/traverse-a-nested-dictionary-and-get-the-path-in-python
     """
-
     # Initialize the 'old' parameter to the same type as 'new' if it's undefined
     # This allows for the 'old' parameter to be undefined without causing the algorithm
     # to treat it as a simple value. (no recursive call, no path diffs)
-    if old is Undefined and new is not Undefined:
+    if old in (Undefined, None) and new not in (Undefined, None):
         old = type(new)()
+    # Likewise, if new is Undefined or None, consider the new value of the same
+    # type as the old one.
+    elif new in (Undefined, None) and old not in (Undefined, None):
+        new = type(old)()
 
-    # Ensure both values are of the same type
+    # Ensure both values are of the same type when there are no None values.
     if type(old) != type(new):
-        raise Exception('Requested a diff of a {} (original) and a {} (target), aborting.'.format(type(old), type(new)))
+        raise Exception('Requested a diff of a {} (original) and a {} (target), aborting.'.format(
+            type(old), type(new)))
 
     diff = []
+    keys = []
 
     # Check if we're comparing lists, in which case we convert the list to a
     # dictionary with keys corresponding to their indexes like '0', '1', '2'.
@@ -88,7 +107,8 @@ def dotdiff(old, new, prefix=list()):
             count_prefix = prefix[:]
             count_prefix.append('#')
 
-            diff.append(DiffEntry(path=count_prefix, old=len(old), new=len(new)))
+            diff.append(DiffEntry(path=count_prefix,
+                                  old=len(old), new=len(new)))
 
         # When comparing lists, all keys (old and new) are compared; values can be added, removed
         # or changed on both sides. Both old and new keys are converted to a set to remove dupes.
@@ -103,7 +123,8 @@ def dotdiff(old, new, prefix=list()):
 
     else:
         # Only diff nested structures
-        raise Exception('dotdiff() can only diff nested structures (got a {} and a {})'.format(type(old), type(new)))
+        raise Exception('dotdiff() can only diff nested structures (got a {} and a {})'.format(
+            type(old), type(new)))
 
     # Traverse the dictionary on the left, and report values that are missing or changed on the right.
     for ikey in keys:
